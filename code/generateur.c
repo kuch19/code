@@ -3,7 +3,9 @@
 #include <time.h>
 #include "structures.h"
 
-#define TAILLEPOINT 1 //Diametre d'un point
+#define MARGE 50 
+#define TAILLEPOINT 4 //Diametre d'un point
+int N, xmin , xmax, ymin, ymax;
 
 //Dessine un point en SVG
 char* dessinerPoint(FILE *file, POINT p, int r){ 
@@ -22,11 +24,12 @@ char* dessinerCercle(FILE *file, int x, int y, int r){
 
 //Dessine les points et le cercle dans le SVG
 void ecritureSVG(POINT tab[], FILE* file , int N){
-  //On dessine tous les points dans le SVG
-  for(int i=0; i<N; i++){
-    dessinerPoint(file, tab[i], TAILLEPOINT);
+  for (int i = 0; i < N; i++) {
+    POINT p;
+    p.x = ((tab[i].x*1700)/xmax)+150;
+    p.y = ((tab[i].y*1300)/ymax)+100;
+    dessinerPoint(file, p, TAILLEPOINT);
   }
-  dessinerCercle(file, 100, 200, 50);
 }
 
 void GenerationFichierSVG(POINT* tab , int N){
@@ -35,12 +38,23 @@ void GenerationFichierSVG(POINT* tab , int N){
   file= fopen("Points.svg", "w");
   
   //ecriture de l'entete
+
   fprintf(file,"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
   fprintf(file,"<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\"\n");
   fprintf(file,"\"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n");
-  fprintf(file,"<svg width=\"500\" height=\"500\" version=\"1.1\"\n");
-  fprintf(file,"xmlns=\"http://www.w3.org/2000/svg\">\n");
-  
+  fprintf(file,"<svg width=\"2000\" height=\"1500\" version=\"1.1\"\n");
+  fprintf(file, "xmlns=\"http://www.w3.org/2000/svg\" style=\"background-color: white\">\n");
+  fprintf(file, "<rect x=\"0\" y=\"0\" width=\"2000\" height=\"1500\" fill=\"#ffffff\" />\n");
+
+  fprintf(file, "<line x1=\"100\" y1=\"1450\" x2=\"1900\" y2=\"1450\" stroke=\"black\" />\n"); // Axe x
+  fprintf(file, "<text x=\"100\" y=\"1475\" font-family=\"Arial\" font-size=\"20\">%d</text>\n", xmin);
+  fprintf(file, "<text x=\"1900\" y=\"1475\" font-family=\"Arial\" font-size=\"20\">%d</text>\n", xmax);
+
+  fprintf(file, "<line x1=\"100\" y1=\"50\" x2=\"100\" y2=\"1450\" stroke=\"black\" />\n"); // Axe y
+  fprintf(file, "<text x=\"50\" y=\"1450\" font-family=\"Arial\" font-size=\"20\">%d</text>\n", ymin);
+  fprintf(file, "<text x=\"50\" y=\"50\" font-family=\"Arial\" font-size=\"20\">%d</text>\n", ymax);    
+
+ 
   //ecriture du programme
   ecritureSVG(tab,file,N);
   
@@ -54,7 +68,7 @@ int rand_a_b (int a, int b){
 }
 
 int main( int argc, char* argv []){
-  int N, xmin , xmax, ymin, ymax; //N=nb  de points et coordonnées du cadre 
+   //N=nb  de points et coordonnées du cadre 
   srand(time(NULL));
   if (argc!=6){
     printf ("nb invalide d'arguments\n");
