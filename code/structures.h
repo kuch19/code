@@ -9,7 +9,8 @@ typedef struct model_point{
 } POINT;
 
 typedef struct model_cercle{
-	double centre_cercle;
+	double x_cercle;
+	double y_cercle;
 	double rayon_cercle;
 } CERCLE;
 

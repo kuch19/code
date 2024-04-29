@@ -184,6 +184,88 @@ int rand_a_b (int a, int b){
   return rand()%(b-a )+a;
 }
 
+///////////////////////////////WELZ//////////////////////////
+double distance(POINT p1, POINT p2) {
+    return sqrt(pow(p2.x - p1.x, 2) + pow(p2.y - p1.y, 2));
+}
+
+int pointInsideCircle(POINT p, CERCLE c) {
+    POINT q; 
+    q.x = c.x_cercle;
+    q.y = c.y_cercle;
+    return distance(p, q) <= c.rayon_cercle;
+}
+
+CERCLE welz(POINT* tab, int n){
+    CERCLE res;
+    if (n == 0) {
+        res.x_cercle = 0; 
+        res.y_cercle = 0; 
+        res.rayon_cercle = 0;
+        return (res);
+    }
+    // Cas de base : un point
+    else if (n == 1) {
+        res.x_cercle = tab[0].x; 
+        res.y_cercle = tab[0].y; 
+        res.rayon_cercle = 0;
+        return (res);
+    }
+    // Cas de base : deux points
+    else if (n == 2) {
+        res.x_cercle = (tab[0].x + tab[1].x) / 2;
+        res.y_cercle = (tab[0].y + tab[1].y) / 2;
+        res.rayon_cercle = sqrt(pow(tab[1].x - tab[0].x, 2) + pow(tab[1].y - tab[1].y, 2));
+        return (res);
+    }
+    // Cas général
+    else {
+        // Sélectionnez un point aléatoire
+        int randomIndex = rand() % n;
+        POINT randomPoint = tab[randomIndex];
+
+        // Supprimez ce point de la liste
+        for (int i = randomIndex; i < n - 1; ++i) {
+            tab[i] = tab[i + 1];
+        }
+
+        // Appel récursif pour les points restants
+        CERCLE minCircle = welz(tab, n - 1);
+
+        // Si le point n'est pas dans le cercle, agrandissez le cercle pour l'inclure
+        if (!pointInsideCircle(randomPoint, minCircle)) {
+            // Créez un cercle avec le point comme seul point du contour
+            minCircle.x_cercle = randomPoint.x;
+            minCircle.y_cercle = randomPoint.y;
+            minCircle.rayon_cercle = 0;
+
+            // Trouvez le cercle minimum contenant les points restants
+            for (int i = 0; i < n - 1; ++i) {
+                if (!pointInsideCircle(tab[i], minCircle)) {
+                    // Sélectionnez deux points
+                    minCircle.x_cercle = (tab[i].x + randomPoint.x) / 2;
+                    minCircle.y_cercle = (tab[i].y + randomPoint.y) / 2;
+                    minCircle.rayon_cercle = distance(tab[i], randomPoint) / 2;
+                    for (int j = 0; j < i; ++j) {
+                        if (!pointInsideCircle(tab[j], minCircle)) {
+                            // Calculez le cercle contenant les trois points
+                            minCircle.x_cercle = (tab[i].x + tab[j].x) / 2;
+                            minCircle.y_cercle = (tab[i].y + tab[j].y) / 2;
+                            minCircle.rayon_cercle = distance(tab[i], tab[j]) / 2;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        return minCircle;
+    }
+
+
+}
+
+
 int main( int argc, char* argv []){
    //N=nb  de points et coordonnées du cadre 
   srand(time(NULL));
@@ -231,5 +313,10 @@ int main( int argc, char* argv []){
   }
   GenerationFichierSVG(tab , N);
  
+ //Implementation WELZ 
+
+  CERCLE res_welz = welz(tab,N);
+  printf("Centre du cercle minimum : (%.2f, %.2f)\n", res_welz.x_cercle, res_welz.y_cercle);
+  printf("Rayon du cercle minimum : %.2f\n", res_welz.rayon_cercle);
   return 0; 
 }
